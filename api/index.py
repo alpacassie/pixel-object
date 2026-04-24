@@ -47,7 +47,12 @@ async def generate(photo: UploadFile = File(...)):
         )
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=502, detail=f"{type(e).__name__}: {e}")
+        cause = getattr(e, "__cause__", None) or getattr(e, "__context__", None)
+        cause_str = f" | cause: {type(cause).__name__}: {cause!r}" if cause else ""
+        raise HTTPException(
+            status_code=502,
+            detail=f"{type(e).__name__}: {e!r}{cause_str}",
+        )
 
     png_bytes = base64.b64decode(result.data[0].b64_json)
     return Response(content=png_bytes, media_type="image/png")
