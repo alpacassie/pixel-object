@@ -1,4 +1,5 @@
 import base64
+import traceback
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -45,7 +46,8 @@ async def generate(photo: UploadFile = File(...)):
             n=1,
         )
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"image generation failed: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=502, detail=f"{type(e).__name__}: {e}")
 
     png_bytes = base64.b64decode(result.data[0].b64_json)
     return Response(content=png_bytes, media_type="image/png")
